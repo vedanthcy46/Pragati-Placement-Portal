@@ -6,6 +6,6 @@ import { requireRole } from "../middleware/requireStudentRole.js";
 const router = express.Router();
 router.use(authMiddleware);
 router.use(requireRole("student", "college"));
-router.get("/student-profile/performance-analytics", getPerformanceAnalytics);
+router.get("/performance-analytics", getPerformanceAnalytics);
 
 export default router;

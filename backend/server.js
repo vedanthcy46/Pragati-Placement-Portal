@@ -56,6 +56,7 @@ import collegeJobsRoutes from "./routes/college.jobs.routes.js";
 import collegeReportsGenerationRoutes from "./routes/collegeReportsGeneration.routes.js";
 import nominationRoutes from "./routes/collegeStudentNominations.routes.js";
 import collegeAnalyticsDashboardRouter from "./routes/collegeAnalyticsDashboard.routes.js";
+import collegePerformanceAnalyticsRoutes from "./routes/collegePerformanceAnalytics.routes.js";
  
 // Department Module Routes
 import departmentRoutes from "./routes/college.department.routes.js";
@@ -174,6 +175,8 @@ app.use("/api/college/dashboard", collegeDashboardRoutes);
  
 // Student Profile & Performance Tracking module
 app.use("/api/student-profile", collegeStudentProfileRoutes);
+// GET /api/student-profile/performance-analytics (see API_DOCUMENTATION.md)
+app.use("/api/student-profile", collegePerformanceAnalyticsRoutes);
 app.use("/api", collegeSkillsRoutes);
 app.use("/api", collegeCertificationsRoutes);
 app.use("/api", collegeInternshipsRoutes);

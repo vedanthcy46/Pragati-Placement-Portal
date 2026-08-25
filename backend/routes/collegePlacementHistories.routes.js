@@ -7,6 +7,7 @@ import {
   getAppliedCompanies,
   getInterviewHistory,
   getOfferHistory,
+  updateOfferDecision,
 } from "../controllers/collegePlacementHistories.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router.get("/student-profile/placements", getPlacementHistory);
 router.get("/student-profile/applied-companies", getAppliedCompanies);
 router.get("/student-profile/interviews", getInterviewHistory);
 router.get("/student-profile/offers", getOfferHistory);
+
+router.patch("/student-profile/offers/:id/decision", updateOfferDecision);
 
 export default router;

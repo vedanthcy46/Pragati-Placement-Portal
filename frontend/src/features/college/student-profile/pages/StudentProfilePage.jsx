@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import useStudentProfile from "../hooks/useStudentProfile";
 import useAcademicPerformance from "../hooks/useAcademicPerformance";
 import usePlacementTracking from "../hooks/usePlacementTracking";
+import { updateOfferDecision } from "../services/studentProfileService";
 
 // Components
 import StudentProfileCard from "../components/profile/StudentProfileCard";
@@ -104,14 +105,25 @@ export const StudentProfilePage = () => {
     refetchPlacements();
   };
 
-  const handleAcceptOffer = (offerId, companyName) => {
-    // Local state modification mock or real API hook integration
-    updateProfileLocal({ placementStatus: "Placed" });
-    toast.success(`Congratulations! You have accepted the job offer from ${companyName}.`);
+  const handleAcceptOffer = async (offerId, companyName) => {
+    try {
+      await updateOfferDecision(offerId, "Accepted");
+      updateProfileLocal({ placementStatus: "Placed" });
+      toast.success(`Congratulations! You have accepted the job offer from ${companyName}.`);
+      refetchPlacements();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || `Failed to accept the offer from ${companyName}.`);
+    }
   };
 
-  const handleRejectOffer = (offerId, companyName) => {
-    toast.error(`Declined the offer from ${companyName}.`);
+  const handleRejectOffer = async (offerId, companyName) => {
+    try {
+      await updateOfferDecision(offerId, "Declined");
+      toast.success(`Declined the offer from ${companyName}.`);
+      refetchPlacements();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || `Failed to decline the offer from ${companyName}.`);
+    }
   };
 
   if (isLoading) {

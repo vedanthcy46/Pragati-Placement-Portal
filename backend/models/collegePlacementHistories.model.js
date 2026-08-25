@@ -43,3 +43,14 @@ export const getOfferHistory = async (studentId) => {
   const { rows } = await pool.query(query, [studentId]);
   return rows;
 };
+
+export const updateOfferStatus = async (studentId, recordId, status) => {
+  const query = `
+    UPDATE placement_history
+    SET status = $3, updated_at = NOW()
+    WHERE id = $2 AND student_id = $1 AND status = 'Offered'
+    RETURNING id, company_name, role_applied, offer_date, offer_package, status
+  `;
+  const { rows } = await pool.query(query, [studentId, recordId, status]);
+  return rows[0] || null;
+};

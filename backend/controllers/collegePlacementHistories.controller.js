@@ -35,3 +35,16 @@ export const getOfferHistory = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateOfferDecision = async (req, res, next) => {
+  try {
+    const data = await placementService.updateOfferDecision(
+      req.user.userId,
+      Number(req.params.id),
+      req.body?.decision
+    );
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};

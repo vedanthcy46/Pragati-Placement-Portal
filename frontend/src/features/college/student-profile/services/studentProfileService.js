@@ -1,3 +1,4 @@
+import api from "../../../../services/api";
 import { getStudentById } from "../../students/services/studentService";
 
 /**
@@ -125,6 +126,14 @@ export const getPlacementHistory = async (studentId) => {
     }
     return [];
   }
+};
+
+export const updateOfferDecision = async (offerId, decision) => {
+  const { data } = await api.patch(
+    `/student-profile/offers/${offerId}/decision`,
+    { decision }
+  );
+  return data;
 };
 
 export const getSkills = async (studentId) => {
