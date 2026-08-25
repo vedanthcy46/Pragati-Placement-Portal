@@ -1,5 +1,5 @@
 // API base URL (uses Vite env var in production, falls back to localhost)
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export const API_BASE_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
 
 // Common regex patterns

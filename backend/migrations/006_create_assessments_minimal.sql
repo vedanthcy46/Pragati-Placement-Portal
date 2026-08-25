@@ -25,10 +25,12 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Dummy data so assign-test can be tested end to end.
+-- NOTE: type/difficulty values match the LIVE assessments table constraints
+-- (type IN ('MCQ','Coding'), difficulty IN ('Easy','Medium','Hard')).
 INSERT INTO assessments (title, type, difficulty, time_limit_minutes, total_marks)
 VALUES
-  ('MERN Stack Screening Test', 'Technical', 'Medium', 45, 100),
-  ('DSA Coding Round', 'Design', 'Hard', 60, 100)
+  ('MERN Stack Screening Test', 'MCQ', 'Medium', 45, 100),
+  ('DSA Coding Round', 'Coding', 'Hard', 60, 100)
 ON CONFLICT DO NOTHING;
 
 -- Dummy course data so assign-course's success path can also be tested
