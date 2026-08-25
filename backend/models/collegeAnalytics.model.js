@@ -286,6 +286,7 @@ export const getFilterOptions = async (collegeId) => {
     companies,
     hiringCompanies,
     registeredCompanies,
+    deptCatalog,
   ] = await Promise.all([
     pool.query(
       `SELECT DISTINCT department FROM students
@@ -335,7 +336,59 @@ export const getFilterOptions = async (collegeId) => {
        WHERE name IS NOT NULL AND name <> ''
        ORDER BY name ASC`
     ),
+    // Academic department catalog (departments management module)
+    pool.query(
+      `SELECT name FROM departments
+       WHERE is_active = true AND name IS NOT NULL AND name <> ''
+       ORDER BY name ASC`
+    ),
   ]);
+
+  // Enrich options so forms (e.g., add-student) offer a full catalog instead
+  // of only values that already exist in the students table.
+  const CURRENT_YEAR = new Date().getFullYear();
+  const STANDARD_COURSES = [
+    "B.Tech",
+    "M.Tech",
+    "MCA",
+    "MBA",
+    "B.Sc",
+    "M.Sc",
+    "BBA",
+    "BCA",
+    "B.Com",
+  ];
+
+  const dbDepartments = depts.rows.map((r) => r.department).filter(Boolean);
+  const departmentOptions = [
+    ...new Set([...deptCatalog.rows.map((r) => r.name), ...dbDepartments]),
+  ].sort();
+
+  const courseOptions = [
+    ...new Set([...STANDARD_COURSES, ...courses.rows.map((r) => r.course).filter(Boolean)]),
+  ].sort();
+
+  const dbBatchYears = batches.rows
+    .map((r) => Number(r.batch))
+    .filter((n) => !Number.isNaN(n));
+  const minBatch = Math.min(CURRENT_YEAR - 5, ...(dbBatchYears.length ? dbBatchYears : [CURRENT_YEAR]));
+  const maxBatch = Math.max(CURRENT_YEAR + 1, ...(dbBatchYears.length ? dbBatchYears : [CURRENT_YEAR]));
+  const batchOptions = [];
+  for (let y = maxBatch; y >= minBatch; y--) batchOptions.push(String(y));
+
+  const semesterOptions = [
+    ...new Set([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      ...semesters.rows.map((r) => String(r.semester)),
+    ]),
+  ].sort((a, b) => Number(a) - Number(b));
 
   const companySet = new Set([
     ...registeredCompanies.rows.map((r) => r.name),
@@ -344,10 +397,10 @@ export const getFilterOptions = async (collegeId) => {
   ]);
 
   return {
-    departments: depts.rows.map((r) => r.department),
-    courses: courses.rows.map((r) => r.course),
-    batches: batches.rows.map((r) => r.batch),
-    semesters: semesters.rows.map((r) => String(r.semester)),
+    departments: departmentOptions,
+    courses: courseOptions,
+    batches: batchOptions,
+    semesters: semesterOptions,
     placementStatuses: statuses.rows.map((r) => r.placement_status),
     companies: Array.from(companySet).sort(),
   };
