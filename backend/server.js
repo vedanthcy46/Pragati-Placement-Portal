@@ -24,7 +24,7 @@ import authRouter from "./routes/auth.routes.js";
 import studentRoutes from "./routes/student.routes.js";
 import contentRoutes from "./routes/content.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
-import collegeProfileRoutes from "./routes/collage.profile.routes.js";
+import collegeProfileRoutes from "./routes/college.profile.routes.js";
 import companyProfileRoutes from "./modules/company/routes/companyProfile.routes.js";
 import companyCandidateRoutes from "./modules/company/routes/companyCandidate.routes.js";
 import companyDashboardRoutes from "./modules/company/routes/companyDashboard.routes.js";
@@ -192,7 +192,6 @@ app.use("/api/analytics", collegeAnalyticsDashboardRouter);
 // A previous duplicate mount at bare "/api" routed every /api/* request
 // through this router's auth/role guards and 403-blocked unrelated
 // endpoints such as /api/placement-drives.
-app.use("/api/v1/company/jobs", collegeJobsRoutes);
 // Departments, Courses & Statistics
 app.use("/api/departments/statistics", departmentStatisticsRoutes);
 app.use("/api/departments", departmentRoutes);
@@ -203,7 +202,6 @@ app.use("/api/companies", companiesRoutes);
  
 // Placement
 app.use("/api/placement-drives", placementDriveRoutes);
-app.use("/api", collegeCommunicationAnnouncementsRoutes);
 // Notifications, Certificates, Badges
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/certificates", certificatesRouter);
@@ -213,8 +211,6 @@ app.get(
   authMiddleware,
   getStudentBadgesController,
 );
- 
-app.use("/api/reports", collegeReportsGenerationRoutes);
 
 // Health Check
 app.get("/", (req, res) => {
