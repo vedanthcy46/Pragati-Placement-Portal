@@ -10,7 +10,7 @@
   NODE_VERSION = "22"
   # IMPORTANT: Replace with your actual Render backend URL after the first deploy.
   # It must end with /api because services like companyService.js append /v1/company to it.
-  VITE_API_URL = "https://pragati-backend.onrender.com/api"
+  VITE_API_URL = "https://pragati-placement-portal.onrender.com/api"
 
 # SPA fallback: serve index.html for all client-side routes.
 # No "force" so real static assets (JS/CSS/images) are served first.
