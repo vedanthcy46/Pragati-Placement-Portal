@@ -1,0 +1,48 @@
+# Render Blueprint for the backend (Express + PostgreSQL)
+# Deploy: Render Dashboard -> New -> Blueprint -> select this repo.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: pragati-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically; server.js already reads process.env.PORT
+
+      # Frontend URL used by CORS (server.js) — set after your first Netlify deploy.
+      # Replace with your actual Netlify site URL.
+      - key: CLIENT_URL
+        sync: false
+
+      # PostgreSQL connection string (Render Postgres, Neon, Supabase, etc.)
+      - key: POSTGRESQL_URI
+        sync: false
+
+      # Auto-generated strong secret on first deploy
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Optional: Redis for Bull email queue (e.g., Render Key Value / Upstash).
+      # Falls back to localhost if unset — email queue will not work without it.
+      - key: REDIS_URL
+        sync: false
+
+      # Optional integrations
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESOURCE_TOKEN_SECRET
+        generateValue: true
+      - key: JUDGE0_API_URL
+        sync: false
+      - key: JUDGE0_API_KEY
+        sync: false
