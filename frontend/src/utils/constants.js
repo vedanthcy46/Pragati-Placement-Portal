@@ -1,5 +1,6 @@
-// API base URL (change if backend URL differs)
-export const API_BASE_URL = "http://localhost:8080/api";
+// API base URL (uses Vite env var in production, falls back to localhost)
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001";
+export const API_BASE_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
 
 // Common regex patterns
 export const REGEX = {

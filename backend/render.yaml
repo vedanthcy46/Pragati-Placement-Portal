@@ -10,6 +10,12 @@ services:
         value: production
       - key: CLIENT_URL
         value: https://your-frontend.netlify.app
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: RESEND_API_KEY
+        value: 4a9b8c1e-5c3d-4f2e-9b6a-7d8e9f0a1b2c
       - key: POSTGRESQL_URI
         fromDatabase:
           name: pragati-db
