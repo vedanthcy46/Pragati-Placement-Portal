@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: pragati-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://your-frontend.netlify.app
+      - key: POSTGRESQL_URI
+        fromDatabase:
+          name: pragati-db
+          property: connectionString
+
+databases:
+  - name: pragati-db
+    plan: free
