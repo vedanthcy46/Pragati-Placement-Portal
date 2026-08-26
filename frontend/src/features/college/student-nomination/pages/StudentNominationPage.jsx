@@ -635,7 +635,16 @@ const StudentNominationContent = () => {
                   }
                 });
               }}
-              onMarkSelected={() => refreshData()}
+              onMarkSelected={async (student) => {
+                const studentId = student.student_id ?? student.id;
+                const res = await selectStudent(studentId);
+                if (res?.success === false) {
+                  toast.error(res.message || "Failed to select student.");
+                } else {
+                  toast.success(res.message || `${student.name} selected successfully.`);
+                  refreshData();
+                }
+              }}
               getStudentActions={(s) => {
                 switch (s.status) {
                   case "Nominated":

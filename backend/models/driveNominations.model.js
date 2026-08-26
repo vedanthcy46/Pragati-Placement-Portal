@@ -6,9 +6,15 @@ import { MIN_CGPA_FOR_ELIGIBILITY } from '../constants/collegeStudentNominations
 // Queries the eligible_students VIEW (backed by the students table) so that
 // every student added to the student database is automatically included.
 // Filters by:
-//   - drive's CGPA cutoff (falls back to MIN_CGPA_FOR_ELIGIBILITY)
-//   - drive's allowed_branches (skipped when no eligibility row exists)
-//   - placement_status != 'Placed'
+//   - drive's CGPA cutoff (falls back to MIN_CGPA_FOR_ELIGIBILITY); cutoffs
+//     are evaluated per-student against only the eligibility rows that apply
+//     to that student's department
+//   - drive's allowed_branches, matched case/space-insensitively and with
+//     common abbreviations (CSE → Computer Science, IT → Information
+//     Technology, ECE → Electronics, ...) so short codes in drive rules
+//     still match full department names in the students table
+//   - placement_status: excludes 'Placed' AND 'Not Eligible'; students with
+//     a NULL placement_status remain eligible
 //   - optional college_id so each college only sees their own students
 export const getEligibleForDrive = async (driveId, collegeId = null) => {
   const params = [driveId, MIN_CGPA_FOR_ELIGIBILITY];
@@ -28,27 +34,59 @@ export const getEligibleForDrive = async (driveId, collegeId = null) => {
       AND dn.drive_id = $1
       -- Withdrawn nominations do not count as active
       AND dn.status != 'Withdrawn'
-     WHERE
-       es.placement_status != 'Placed'
-       ${collegeFilter}
-       AND es.cgpa >= (
-         SELECT COALESCE(MAX(de.cgpa_cutoff), $2)
-         FROM drive_eligibility de
-         WHERE de.drive_id = $1
+     CROSS JOIN LATERAL (
+       WITH alias_map(code, full_name) AS (
+         VALUES
+           ('cse', 'computer science'),
+           ('cse', 'computer science engineering'),
+           ('cs',  'computer science'),
+           ('ise', 'information science engineering'),
+           ('it',  'information technology'),
+           ('ece', 'electronics'),
+           ('ece', 'electronics and communication engineering'),
+           ('ece', 'electronics & communication engineering'),
+           ('me',  'mechanical engineering'),
+           ('mech','mechanical engineering'),
+           ('ce',  'civil engineering'),
+           ('civil','civil engineering'),
+           ('eee', 'electrical engineering'),
+           ('ee',  'electrical engineering')
+       ),
+       rules AS (
+         SELECT cgpa_cutoff,
+                COALESCE(allowed_branches, '{}')::varchar[] AS branches
+         FROM drive_eligibility
+         WHERE drive_id = $1
        )
+       SELECT
+         COALESCE(MAX(GREATEST(r.cgpa_cutoff, $2)), $2)::decimal AS min_cgpa_needed,
+         COALESCE(BOOL_OR(array_length(r.branches, 1) > 0), false) AS has_branch_rules,
+         COALESCE(BOOL_OR(
+           array_length(r.branches, 1) IS NULL
+           OR EXISTS (
+             SELECT 1
+             FROM unnest(r.branches) AS rb
+             WHERE LOWER(TRIM(rb)) = LOWER(TRIM(es.department))
+                OR EXISTS (
+                  SELECT 1 FROM alias_map am
+                  WHERE am.code = LOWER(TRIM(rb))
+                    AND am.full_name = LOWER(TRIM(es.department))
+                )
+           )
+         ), true) AS branch_allowed
+       FROM rules r
+     ) rule
+     WHERE
+       -- Not-yet-placed and not explicitly barred students only.
+       -- (COALESCE also keeps NULL-placement students from being dropped,
+       --  which the old "!= 'Placed'" comparison silently did.)
+       COALESCE(es.placement_status, '') NOT IN ('Placed', 'Not Eligible')
+       ${collegeFilter}
+       AND es.cgpa >= rule.min_cgpa_needed
        AND (
          -- pass if drive has no branch restrictions
-         NOT EXISTS (
-           SELECT 1 FROM drive_eligibility
-           WHERE drive_id = $1
-             AND allowed_branches IS NOT NULL
-             AND array_length(allowed_branches, 1) > 0
-         )
-         OR es.department = ANY(
-           SELECT UNNEST(allowed_branches)
-           FROM drive_eligibility
-           WHERE drive_id = $1
-         )
+         NOT rule.has_branch_rules
+         OR rule.branch_allowed
        )
      ORDER BY es.cgpa DESC`,
     params
